@@ -13,25 +13,68 @@ if (themeToggle) {
     });
 }
 
-// Function to fetch data from the API
+// Function to fetch data from REST API (fallback)
 async function fetchData() {
     try {
         const response = await fetch('http://localhost:3000/api/weather');
         if (response.ok) {
             const data = await response.json();
-            // Format timestamp to 12-hour before logging
-            // const formattedTime = data.timestamp ? formatTime(data.timestamp) : 'N/A';
-            const logData = Object.assign({}, data);
-            // console.log('Fetch success Updating UI', logData.timestamp);
-            // console.log('Temperature - ', data.temperature,' Humidity - ', data.humidity);
-            // Update the UI with the data
             updateUI(data);
         } else {
             console.error('Failed to fetch data:', response.status);
         }
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.warn('REST fetch failed; falling back to Firebase realtime:', error);
     }
+}
+
+// Use Firebase Realtime Database to continuously receive sensor data
+function enableFirebaseListener() {
+    if (!window.firebaseDatabase) {
+        console.warn('Firebase database not available');
+        return;
+    }
+
+    const rootRef = window.firebaseDatabase.ref('/');
+    rootRef.on('value', (snapshot) => {
+        const value = snapshot.val();
+        if (!value) return;
+
+        const latest = getLatestWeatherEntry(value);
+        if (!latest) return;
+
+        // Keep history for readiness estimation
+        if (!Array.isArray(window.weatherHistory)) {
+            window.weatherHistory = [];
+        }
+
+        window.weatherHistory.push(latest);
+        if (window.weatherHistory.length > 200) window.weatherHistory.shift();
+
+        updateUI(latest);
+    }, (err) => {
+        console.error('Firebase listener error', err);
+    });
+}
+
+function getLatestWeatherEntry(payload) {
+    if (Array.isArray(payload)) {
+        payload = payload.reduce((best, item) => {
+            if (!item || !item.timestamp) return best;
+            if (!best || item.timestamp > best.timestamp) return item;
+            return best;
+        }, null);
+        return payload;
+    }
+
+    const entries = Object.entries(payload)
+        .map(([key, value]) => ({ key, ...value }))
+        .filter(item => item && item.timestamp && (item.temperature !== undefined || item.temperature !== null));
+
+    if (!entries.length) return null;
+
+    entries.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+    return entries[entries.length - 1];
 }
 
 // Function to update the UI
@@ -128,10 +171,44 @@ function updatePredictions(data) {
     }
     insightList.appendChild(cropAdvice);
 
+    const readinessSummary = document.createElement('li');
+    readinessSummary.textContent = computeReadinessMessage(selectedCrop, window.weatherHistory || []);
+    insightList.appendChild(readinessSummary);
+
     const insightsPanel = document.getElementById('prediction-insights');
     if (insightsPanel && insightsPanel.hidden) {
         insightsPanel.hidden = false;
     }
+}
+
+function computeReadinessMessage(selectedCrop, history = []) {
+    const daysForCrop = {
+        maize: 90,
+        wheat: 110,
+        'kidney beans': 80,
+        sunflower: 85,
+        'irish potatoes': 100
+    };
+
+    const cropKey = (selectedCrop || '').toLowerCase();
+    const cropDays = daysForCrop[cropKey] || 90;
+
+    if (!history.length) {
+        return 'No weather history available yet to estimate crop readiness.';
+    }
+
+    const degDayBase = history.reduce((acc, item, i) => {
+        if (!item || item.temperature == null) return acc;
+        const currentTemp = Number(item.temperature);
+        const degree = Math.max(0, currentTemp - 10);
+        return acc + degree;
+    }, 0);
+
+    const averageDegree = degDayBase / history.length;
+    const percentComplete = Math.min(100, Math.round((averageDegree / 20) * 100));
+    const daysLeft = Math.max(0, Math.round(cropDays - (cropDays * (percentComplete / 100))));
+
+    return `Estimated readiness: ${percentComplete}% complete for ${selectedCrop} (approx. ${daysLeft} days to harvest).`;
 }
 
 
@@ -191,10 +268,13 @@ function initializeCropWidgets() {
     }
 }
 
-// Fetch data every 5 seconds
+// Fetch data every 5 seconds from local API (fallback)
 setInterval(fetchData, 5000);
 
 // Initial fetch
 fetchData();
+
+// Start Firebase realtime listener immediately (preferred source)
+enableFirebaseListener();
 
 initializeCropWidgets();

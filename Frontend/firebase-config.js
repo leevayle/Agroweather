@@ -1,14 +1,9 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase config (Realtime Database)
+// Using compat library to support classic API style in plain script.
 const firebaseConfig = {
   apiKey: "AIzaSyDHdWWlPCljHyxPhjn7v0m8kFbD-aIa7NE",
   authDomain: "agroweather-a1637.firebaseapp.com",
+  databaseURL: "https://agroweather-a1637-default-rtdb.firebaseio.com",
   projectId: "agroweather-a1637",
   storageBucket: "agroweather-a1637.firebasestorage.app",
   messagingSenderId: "899277360166",
@@ -16,6 +11,8 @@ const firebaseConfig = {
   measurementId: "G-MQ3VZTK1P8"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// Expose database reference for script.js use
+window.firebaseDatabase = database;

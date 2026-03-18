@@ -145,8 +145,44 @@
                     
                 </div>
             </div>
-            <div class="mbottom border">
-                
+            <div class="mbottom ">
+                <div class="predictions-wrapper" id="crops-wrapper">
+                    <div class="predictions-header">
+                        <h3>My Crops</h3>
+                        <a href="#" class="see-predictions" id="see-predictions">See predictions &#8250;</a>
+                    </div>
+                    <div class="predictions-cards" id="predictions-cards">
+                        <div class="crop-card" data-crop="Maize">
+                            <img src="images/maize.png" alt="Maize" class="crop-icon">
+                            <div class="crop-name">Maize</div>
+                        </div>
+                        <div class="crop-card" data-crop="Wheat">
+                            <img src="images/wheat.png" alt="Wheat" class="crop-icon">
+                            <div class="crop-name">Wheat</div>
+                        </div>
+                        <div class="crop-card" data-crop="Kidney Beans">
+                            <img src="images/kidney beans.png" alt="Kidney Beans" class="crop-icon">
+                            <div class="crop-name">Kidney Beans</div>
+                        </div>
+                        <div class="crop-card" data-crop="Sunflower">
+                            <img src="images/sunflower.png" alt="Sunflower" class="crop-icon">
+                            <div class="crop-name">Sunflower</div>
+                        </div>
+                        <div class="crop-card" data-crop="Irish Potatoes">
+                            <img src="images/irish potatoes.png" alt="Irish Potatoes" class="crop-icon">
+                            <div class="crop-name">Irish Potatoes</div>
+                        </div>
+                        <div class="crop-card add-crop" id="add-crop-card">
+                            <div class="add-sign">+</div>
+                        </div>
+                    </div>
+                    <div class="prediction-insights" id="prediction-insights" hidden>
+                        <h4>Insights (next 48h)</h4>
+                        <ul id="insights-list" class="insights-list">
+                            <li>Loading insights from weather and crop patterns...</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

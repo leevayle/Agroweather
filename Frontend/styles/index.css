@@ -317,16 +317,99 @@ header {
 
 
 
-
-
-
-
-
-
-
-
-
-
+.predictions-wrapper {
+    width: 100%;
+    margin-top: 15px;
+    padding: 20px;
+    border-radius: 18px;
+    background: #1F2227;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.predictions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.predictions-header h3 {
+    margin: 0;
+    color: var(--accent1);
+    font-family: 'poppins-b', sans-serif;
+    font-size: 1.25rem;
+}
+.see-predictions {
+    color: #A2D200;
+    font-family: 'poppins-l', sans-serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+.predictions-cards {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+.crop-card,
+.prediction-card {
+    width: 120px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #2f3340 0%, #22262f 100%);
+    border: 1px solid #434B5A;
+    padding: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+}
+.crop-card {
+    cursor: pointer;
+}
+.crop-card.selected,
+.crop-card:hover {
+    border-color: #8AC926;
+    box-shadow: 0 0 12px rgba(138, 201, 38, 0.45);
+}
+.crop-icon {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 8px;
+}
+.crop-name {
+    font-family: 'poppins-l', sans-serif;
+    color: #FFFFFF;
+    font-size: 0.95rem;
+}
+.add-crop {
+    background: #2A2E3B;
+    border: 1px dashed #5C6775;
+}
+.add-sign {
+    color: #A2D200;
+    font-family: 'poppins-b', sans-serif;
+    font-size: 1.8rem;
+}
+.prediction-insights {
+    margin-top: 18px;
+    padding: 12px;
+    background: #202531;
+    border: 1px solid rgba(129,143,166,0.3);
+    border-radius: 12px;
+}
+.prediction-insights h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #62B244;
+    font-family: 'poppins-b', sans-serif;
+    font-size: 1rem;
+}
+.insights-list {
+    margin: 0;
+    padding-left: 16px;
+    color: #cdd1d8;
+    font-family: 'poppins-l', sans-serif;
+}
 
 @media (max-width: 768px) {
     header{

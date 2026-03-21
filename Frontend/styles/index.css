@@ -8,7 +8,7 @@
     --accent2: #EB8120;
     --white: #FFFFFF;
     --off-white: #c5c5c5;
-    --bg-aacent: #263F67;
+    --bg-aacent: #263f67a8;
 }
 
 [data-theme="dark"] {
@@ -61,11 +61,14 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    max-width: 100%;
 }
 .body1{
     display: grid;
-            grid-template-rows: 20% 1fr;
-            height: 100vh;
+    grid-template-rows: 20% 1fr;
+    height: 100vh;
+    width: 99%;
+    margin: auto;
 }
 
 .container {
@@ -73,7 +76,7 @@ body {
     background-color: var(--header-bg);
     display: flex;
     flex-direction: column;
-    width: 100vw;
+    width: 100%;
 }
 
 header {
@@ -149,6 +152,7 @@ header {
     width: 90%;
     margin: auto;
     align-items: center;
+    gap:50px;
 }
 
 
@@ -157,23 +161,26 @@ header {
     height: auto;
     display: flex;
     gap: 20px;
-    min-height: 45%;
+    min-height: 40%;
 }
 
 .mbottom {
-    width: 90%;
-    height: 50%;
+    width: 95%;
+    min-height: 50%;
+    height: auto;
     margin: auto;
 }
 
 .mtop1{
     width: 20%;
+    min-width: 200px;
     height: 100%;
     display: flex;
     margin: auto;
 }
 .mtop2{
     width: 45%;
+    min-width: 350px;
     height: 100%;
     display: flex;
     margin: auto;
@@ -200,7 +207,7 @@ header {
 
 .more-values{
     height: 200px;
-    width: 100%;
+    width: 99%;
     display: flex;
     margin: auto;
     font-family: poppins-l;
@@ -318,12 +325,13 @@ header {
 
 
 .predictions-wrapper {
-    width: 100%;
+    width: 95%;
     margin-top: 15px;
     padding: 20px;
     border-radius: 18px;
     background: #1F2227;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    margin: auto;
 }
 .predictions-header {
     display: flex;
@@ -422,6 +430,9 @@ header {
     .topl p{
     color: var(--white);
     font-size: x-large;
+    }
+    .topr, .profile{
+        display:none;
     }
     
 }

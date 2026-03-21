@@ -148,14 +148,16 @@ header {
     height: 98%;
     width: 90%;
     margin: auto;
+    align-items: center;
 }
 
 
 .mtop {
     width: 90%;
-    height: 50%;
-    margin: auto;
+    height: auto;
     display: flex;
+    gap: 20px;
+    min-height: 45%;
 }
 
 .mbottom {
@@ -171,7 +173,7 @@ header {
     margin: auto;
 }
 .mtop2{
-    width: 35%;
+    width: 45%;
     height: 100%;
     display: flex;
     margin: auto;
@@ -179,7 +181,6 @@ header {
 
 .mtop3{
     width: 25%;
-    height: 100%;
     margin-left: auto;
     display: flex;
 }
@@ -305,7 +306,6 @@ header {
     font-size: medium;
 }
 .bottom-tiles-cont{
-    height: 80%;
     max-height: 150px;
     display: flex;
     margin: auto;
@@ -423,5 +423,38 @@ header {
     color: var(--white);
     font-size: x-large;
     }
+    
+}
+
+@media (max-width: 1590px) {
+    .mtop{
+        flex-direction: column;
+        width: 98%;
+    }
+    .mtop3{
+    width: 100%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+    .tiles:first-child{
+        margin-left: auto;
+        margin-right: 20px;
+    }
+    .tiles:last-child{
+        margin-right: auto;
+        margin-left:20px;
+    }
+    #now{
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    .more-values{
+    height: 200px;
+    width: 100%;
+    display: flex;
+}
     
 }

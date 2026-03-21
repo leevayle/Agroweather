@@ -77,28 +77,176 @@ function getLatestWeatherEntry(payload) {
     return entries[entries.length - 1];
 }
 
+function findClosestHistoryEntry(targetTimestampMs) {
+    if (!Array.isArray(window.weatherHistory) || !window.weatherHistory.length) return null;
+
+    let closest = null;
+    let bestDelta = Number.POSITIVE_INFINITY;
+
+    for (const item of window.weatherHistory) {
+        if (!item || item.timestamp == null) continue;
+        let ts = Number(item.timestamp);
+        if (Number.isNaN(ts)) continue;
+        if (ts < 1e12) ts *= 1000;
+
+        const delta = Math.abs(ts - targetTimestampMs);
+        if (delta < bestDelta) {
+            bestDelta = delta;
+            closest = item;
+        }
+    }
+
+    return closest;
+}
+
+function getPreviousHourEntry(latest) {
+    if (!latest || latest.timestamp == null) return null;
+
+    let latestTs = Number(latest.timestamp);
+    if (Number.isNaN(latestTs)) return null;
+    if (latestTs < 1e12) latestTs *= 1000;
+
+    const targetTs = latestTs - 60 * 60 * 1000;
+    const candidate = findClosestHistoryEntry(targetTs);
+
+    if (!candidate || candidate.timestamp == null) return null;
+
+    let candidateTs = Number(candidate.timestamp);
+    if (candidateTs < 1e12) candidateTs *= 1000;
+
+    // require reasonably close match (<= 45 minutes) to avoid stale mismatch
+    if (Math.abs(candidateTs - targetTs) > 45 * 60 * 1000) {
+        return null;
+    }
+
+    return candidate;
+}
+
+function toFirebaseTimestampMs(ts) {
+    if (ts == null) return null;
+    let ms = Number(ts);
+    if (Number.isNaN(ms)) return null;
+    if (ms < 1e12) ms *= 1000;
+    return ms;
+}
+
+function generateNextHourForecast(latest, previous) {
+    if (!latest || latest.temperature == null) return null;
+
+    const currentTemp = Number(latest.temperature);
+    const currentHumidity = latest.humidity != null ? Number(latest.humidity) : null;
+    const currentRain = latest.rainfall != null ? Number(latest.rainfall) : null;
+
+    let forecastTemp = currentTemp;
+    let forecastHumidity = currentHumidity;
+    let forecastRain = currentRain;
+
+    if (previous && previous.temperature != null) {
+        const deltaTemp = currentTemp - Number(previous.temperature);
+        forecastTemp = Number((currentTemp + deltaTemp).toFixed(1));
+
+        if (currentHumidity != null && previous.humidity != null) {
+            const deltaHumidity = currentHumidity - Number(previous.humidity);
+            forecastHumidity = Number(Math.max(0, Math.min(100, currentHumidity + deltaHumidity)).toFixed(0));
+        }
+
+        if (currentRain != null && previous.rainfall != null) {
+            const deltaRain = currentRain - Number(previous.rainfall);
+            forecastRain = Number(Math.max(0, currentRain + deltaRain).toFixed(1));
+        }
+    }
+
+    let predictionTs = Number(latest.timestamp);
+    if (predictionTs < 1e12) predictionTs *= 1000;
+    predictionTs += 60 * 60 * 1000;
+
+    return {
+        timestamp: predictionTs,
+        temperature: forecastTemp,
+        humidity: forecastHumidity,
+        rainfall: forecastRain
+    };
+}
+
+function setTileText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
+function setTileIcon(id, src) {
+    const img = document.getElementById(id);
+    if (img) img.src = src;
+}
+
+function getDayPhase(timestamp) {
+    if (!timestamp) return 'day';
+    let ms = Number(timestamp);
+    if (Number.isNaN(ms)) return 'day';
+    if (ms < 1e12) ms *= 1000;
+    const d = new Date(ms);
+    if (Number.isNaN(d.getTime())) return 'day';
+    const h = d.getHours();
+    if (h >= 6 && h < 18) return 'day';
+    return 'night';
+}
+
+function getIconPathForPhase(phase) {
+    if (phase !== 'day' && phase !== 'night') phase = 'day';
+    return `images/icons/${phase}/01.png`;
+}
+
 // Function to update the UI
 function updateUI(data) {
     // Numeric card placeholders (existing dashboard values)
     const tempEl = document.getElementById('temp');
-    if (tempEl) tempEl.textContent = data.temperature ? `${data.temperature}` : 'N/A';
+    if (tempEl) tempEl.textContent = data.temperature != null ? `${data.temperature}` : 'N/A';
 
     const humidityEl = document.getElementById('humidity');
-    if (humidityEl) humidityEl.textContent = data.humidity ? `${data.humidity}` : 'N/A';
+    if (humidityEl) humidityEl.textContent = data.humidity != null ? `${data.humidity}` : 'N/A';
 
     const rainEl = document.getElementById('rain');
-    if (rainEl) rainEl.textContent = data.rainfall ? `${data.rainfall}` : 'N/A';
+    if (rainEl) rainEl.textContent = data.rainfall != null ? `${data.rainfall}` : 'N/A';
 
     // Additional generic card structure (if present in UI)
-    updateCard('temperature', data.temperature ? `${data.temperature}°C` : 'N/A');
-    updateCard('humidity', data.humidity ? `${data.humidity}%` : 'N/A');
-    updateCard('soil-moisture', data.soilMoisture ? `${data.soilMoisture}%` : 'N/A');
-    updateCard('rainfall', data.rainfall ? `${data.rainfall} mm` : 'N/A');
-    updateCard('wind-speed', data.windSpeed ? `${data.windSpeed} km/h` : 'N/A');
-    updateCard('light-intensity', data.lightIntensity ? `${data.lightIntensity} lux` : 'N/A');
+    updateCard('temperature', data.temperature != null ? `${data.temperature}°C` : 'N/A');
+    updateCard('humidity', data.humidity != null ? `${data.humidity}%` : 'N/A');
+    updateCard('soil-moisture', data.soilMoisture != null ? `${data.soilMoisture}%` : 'N/A');
+    updateCard('rainfall', data.rainfall != null ? `${data.rainfall} mm` : 'N/A');
+    updateCard('wind-speed', data.windSpeed != null ? `${data.windSpeed} km/h` : 'N/A');
+    updateCard('light-intensity', data.lightIntensity != null ? `${data.lightIntensity} lux` : 'N/A');
 
-    const timeValue = data.timestamp ? formatTime(data.timestamp) : 'N/A';
-    updateCard('time', timeValue);
+    // Current (blue) tile
+    const currentTemp = data.temperature != null ? `${data.temperature}°` : 'N/A';
+    const currentTime = data.timestamp ? formatTime(data.timestamp) : 'N/A';
+    setTileText('temp-now', currentTemp);
+    setTileText('current-time', currentTime);
+
+    // Resolve icon phase for each reference
+    const currentPhase = getDayPhase(data.timestamp);
+    const currentIcon = getIconPathForPhase(currentPhase);
+    setTileIcon('current-icon', currentIcon);
+    setTileIcon('main-icon', currentIcon);
+
+    // Previous hour data from local history
+    const previousEntryLocal = getPreviousHourEntry(data);
+    if (previousEntryLocal) {
+        setTileText('prev-temp', `${previousEntryLocal.temperature}°`);
+        setTileText('prev-time', formatTime(previousEntryLocal.timestamp));
+        setTileIcon('prev-icon', getIconPathForPhase(getDayPhase(previousEntryLocal.timestamp)));
+    } else {
+        setTileText('prev-temp', 'N/A');
+        setTileText('prev-time', 'Loading...');
+        setTileIcon('prev-icon', getIconPathForPhase('neither'));
+    }
+
+    // Next hour forecast (simple trend-based if historical data available)
+    const nextForecast = generateNextHourForecast(data, previousEntryLocal);
+    const nextTemp = (nextForecast && nextForecast.temperature != null) ? `${nextForecast.temperature}°` : 'N/A';
+    const nextTime = (nextForecast && nextForecast.timestamp) ? formatTime(nextForecast.timestamp) : 'Estimated';
+    setTileText('next-temp', nextTemp);
+    setTileText('next-time', nextTime);
+    const nextPhase = getDayPhase(nextForecast ? nextForecast.timestamp : null);
+    setTileIcon('next-icon', getIconPathForPhase(nextPhase));
 
     // Keep latest weather for insights and toggles
     window.latestWeatherData = data;

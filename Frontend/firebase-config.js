@@ -11,8 +11,8 @@ const firebaseConfig = {
   measurementId: "G-MQ3VZTK1P8"
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = firebase.initializeApp(firebaseConfig);
+const database = app.database();
 
 // Expose database reference for script.js use
 window.firebaseDatabase = database;

@@ -1,3 +1,31 @@
+// Redirect to auth if not logged in
+const userData = localStorage.getItem('agroweather_user') || sessionStorage.getItem('agroweather_user');
+let currentUser = null;
+
+if (!userData) {
+    window.location.href = 'auth.html';
+} else {
+    try {
+        currentUser = JSON.parse(userData);
+        const userEl = document.querySelector('.user');
+        if (userEl) {
+            userEl.textContent = currentUser.username || "User";
+        }
+    } catch (e) {
+        console.error("Session corrupted");
+        window.location.href = 'auth.html';
+    }
+}
+
+// Global history array for trend estimation and historical data tracking
+window.weatherHistory = [];
+
+window.logout = () => {
+    localStorage.removeItem('agroweather_user');
+    sessionStorage.removeItem('agroweather_user');
+    window.location.href = 'auth.html';
+};
+
 // Theme toggle functionality
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
@@ -26,7 +54,7 @@ async function fetchData() {
     }
 }
 
-// Use Firebase Realtime Database to continuously receive sensor data
+// Use Firebase Realtime Database to continuously receive live sensor data
 function enableFirebaseListener() {
     if (!window.firebaseDatabase) {
         console.error('Firebase database not available');
@@ -38,20 +66,19 @@ function enableFirebaseListener() {
         const value = snapshot.val();
         if (!value) return;
 
-        // Use sensorData sub-node if that's where ESP32 pushes
+        // Process sensorData sub-node where hardware usually pushes data
         const dataToProcess = value.sensorData || value;
         const latest = getLatestWeatherEntry(dataToProcess);
         if (!latest) return;
 
-        // Keep history for readiness estimation
+        // Maintain a local history buffer for linear trend forecasting
         if (!Array.isArray(window.weatherHistory)) {
             window.weatherHistory = [];
         }
-
         window.weatherHistory.push(latest);
         if (window.weatherHistory.length > 200) window.weatherHistory.shift();
 
-        // If we don't have previous data for the tile, try fetching it from DB
+        // Attempt to fetch 1-hour-old data from Firebase if not in local history
         checkAndFetchPreviousData(latest);
 
         updateUI(latest);
@@ -252,6 +279,11 @@ function updateUI(data) {
         humidityEl.textContent = data.humidity != null ? `${data.humidity}` : 'N/A';
     }
 
+    const locationEl = document.getElementById('location-text');
+    if (locationEl && data.location) {
+        locationEl.textContent = data.location;
+    }
+
     // Rain data now handled by rain.js from API
     // const rainEl = document.getElementById('rain');
     // if (rainEl) rainEl.textContent = data.rainfall ? `${data.rainfall}` : 'N/A';
@@ -426,8 +458,9 @@ function formatTime(ts) {
 window.selectedCrop = 'Maize';
 
 async function fetchCrops() {
+    if (!currentUser?._id) return;
     try {
-        const response = await fetch('http://localhost:3000/api/crops');
+        const response = await fetch(`http://localhost:3000/api/crops/${currentUser._id}`);
         if (response.ok) {
             const crops = await response.json();
             renderCrops(crops);
@@ -478,9 +511,10 @@ function renderCrops(crops) {
 }
 
 async function deleteCrop(name) {
+    if (!currentUser?._id) return;
     if (!confirm(`Delete ${name}?`)) return;
     try {
-        await fetch(`http://localhost:3000/api/crops/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        await fetch(`http://localhost:3000/api/crops/${currentUser._id}/${encodeURIComponent(name)}`, { method: 'DELETE' });
         fetchCrops();
     } catch (e) { console.error(e); }
 }
@@ -515,8 +549,10 @@ function initializeCropWidgets() {
                 });
             }
 
+            if (!currentUser?._id) return;
+
             try {
-                await fetch('http://localhost:3000/api/crops', {
+                await fetch(`http://localhost:3000/api/crops/${currentUser._id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, image: imageData })

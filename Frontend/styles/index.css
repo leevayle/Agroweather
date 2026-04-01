@@ -112,8 +112,8 @@ body {
 }
 .body1{
     display: grid;
-    grid-template-rows: 20% 1fr;
-    height: 100vh;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
     width: 99%;
     margin: auto;
 }
@@ -194,8 +194,7 @@ header {
 .main{
     display: flex;
     flex-direction: column;
-    height: auto;
-    height: 98%;
+    min-height: 100%;
     width: 90%;
     margin: auto;
     align-items: center;
@@ -209,6 +208,7 @@ header {
     display: flex;
     gap: 20px;
     min-height: 40%;
+    margin-top: 100px;
 }
 
 .mbottom {

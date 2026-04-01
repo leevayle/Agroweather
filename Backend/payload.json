@@ -1,1 +1,8 @@
-{" temperature\:28,\humidity\:56,\deviceId\:\esp32-station-home\,\timestamp\:1766041857892}
+{
+  "timestamp":117,
+  "temperature":28,
+  "humidity":54,
+  "deviceId":"esp32-station-home",
+  "location":"Kisii - KE"
+}
+

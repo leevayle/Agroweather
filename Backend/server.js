@@ -5,21 +5,34 @@ const fs = require('fs');
 const path = require('path');
 
 const CROPS_FILE = path.join(__dirname, 'crops.json');
+const AUTH_FILE = path.join(__dirname, 'auth.json');
+
+// Initialize auth.json if it doesn't exist
+if (!fs.existsSync(AUTH_FILE)) {
+  fs.writeFileSync(AUTH_FILE, JSON.stringify([], null, 2));
+}
+
+function readUsers() {
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_FILE));
+  } catch (e) { return []; }
+}
+
+function writeUsers(users) {
+  fs.writeFileSync(AUTH_FILE, JSON.stringify(users, null, 2));
+}
 
 // Initialize crops.json with default data if it doesn't exist
 if (!fs.existsSync(CROPS_FILE)) {
-  const initialCrops = [
-    { name: 'Maize', image: 'images/maize.png' },
-    { name: 'Wheat', image: 'images/wheat.png' },
-    { name: 'Kidney Beans', image: 'images/kidney beans.png' },
-    { name: 'Sunflower', image: 'images/sunflower.png' },
-    { name: 'Irish Potatoes', image: 'images/irish potatoes.png' }
-  ];
-  fs.writeFileSync(CROPS_FILE, JSON.stringify(initialCrops, null, 2));
+  fs.writeFileSync(CROPS_FILE, JSON.stringify({}, null, 2));
 }
 
 function readCrops() {
-  return JSON.parse(fs.readFileSync(CROPS_FILE));
+  try {
+    const data = JSON.parse(fs.readFileSync(CROPS_FILE));
+    // If data is the old array format, convert it to an object to support per-user storage
+    return Array.isArray(data) ? {} : data;
+  } catch (e) { return {}; }
 }
 
 function writeCrops(crops) {
@@ -33,6 +46,67 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// --- Auth Routes ---
+/**
+ * Registers a new user and saves to auth.json
+ */
+app.post('/api/auth/signup', (req, res) => {
+  try {
+    const { username, email, phone, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const users = readUsers();
+
+    // Check for existing user
+  if (users.find(u => u.username === username || u.email === email)) {
+    return res.status(400).json({ error: 'User already exists' });
+  }
+
+  const newUser = {
+    _id: Date.now().toString(), // MongoDB-like string ID
+    username,
+    email,
+    phone,
+    password, // In a real app, hash this!
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(newUser);
+  writeUsers(users);
+  res.status(201).json({ message: 'User created successfully', user: { username, _id: newUser._id } });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error during signup' });
+  }
+});
+
+/**
+ * Validates user credentials
+ */
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Identifier and password are required' });
+    }
+    const users = readUsers();
+
+    // Identifier can be username, email, or phone
+    const user = users.find(u => 
+      (u.username === identifier || u.email === identifier || u.phone === identifier) && 
+      u.password === password
+    );
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    res.json({ message: 'Login successful', user: { username: user.username, _id: user._id } });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error during login' });
+  }
+});
+
 // Initialize Firebase Admin
 const serviceAccount = require('./firebase_account_keys.json');
 admin.initializeApp({
@@ -42,24 +116,36 @@ admin.initializeApp({
 
 const db = admin.database();
 
-// GET all crops
-app.get('/api/crops', (req, res) => {
-  res.json(readCrops());
+// GET crops for a specific user
+app.get('/api/crops/:userId', (req, res) => {
+  const allCrops = readCrops();
+  const userCrops = allCrops[req.params.userId] || [];
+  res.json(userCrops);
 });
 
-// ADD a crop
-app.post('/api/crops', (req, res) => {
-  const crops = readCrops();
-  crops.push(req.body);
-  writeCrops(crops);
+// ADD a crop for a specific user
+app.post('/api/crops/:userId', (req, res) => {
+  const allCrops = readCrops();
+  const userId = req.params.userId;
+  
+  if (!allCrops[userId]) allCrops[userId] = [];
+  
+  const newCrop = { ...req.body, id: Date.now().toString() };
+  allCrops[userId].push(newCrop);
+  
+  writeCrops(allCrops);
   res.status(201).json(req.body);
 });
 
-// DELETE a crop
-app.delete('/api/crops/:name', (req, res) => {
-  let crops = readCrops();
-  crops = crops.filter(c => c.name !== req.params.name);
-  writeCrops(crops);
+// DELETE a specific crop for a user
+app.delete('/api/crops/:userId/:name', (req, res) => {
+  const allCrops = readCrops();
+  const userId = req.params.userId;
+  
+  if (allCrops[userId]) {
+    allCrops[userId] = allCrops[userId].filter(c => c.name !== req.params.name);
+    writeCrops(allCrops);
+  }
   res.status(200).send();
 });
 

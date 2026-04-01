@@ -3,39 +3,52 @@
     {
       "name": "Maize",
       "image": "images/maize.png",
-      "id": "1775072867271"
+      "id": "1775072867271",
+      "plantedDate": "2024-11-12"
     },
     {
       "name": "Wheat",
       "image": "images/wheat.png",
-      "id": "1775072867272"
+      "id": "1775072867272",
+      "plantedDate": "2024-12-05"
     },
     {
       "name": "Kidney Beans",
       "image": "images/kidney beans.png",
-      "id": "1775072867273"
+      "id": "1775072867273",
+      "plantedDate": "2025-01-10"
     },
     {
       "name": "Sunflower",
       "image": "images/sunflower.png",
-      "id": "1775072867274"
-    },
-    {
-      "name": "Mango",
-      "image": "",
-      "id": "1775072867276"
+      "id": "1775072867274",
+      "plantedDate": "2024-11-28"
     },
     {
       "name": "Irish Potatoes",
       "image": "images/irish potatoes.png",
-      "id": "1775072867275"
+      "id": "1775072867275",
+      "plantedDate": "2024-12-15"
+    },
+    {
+      "name": "Mango",
+      "image": "",
+      "plantedDate": "2025-02-08",
+      "id": "1775079088356"
+    },
+    {
+      "name": "Soya beans",
+      "image": "",
+      "plantedDate": "2026-01-07",
+      "id": "1775080748877"
     }
   ],
   "1775077852395": [
     {
       "name": "Maaize",
       "image": "",
-      "id": "1775077874379"
+      "id": "1775077874379",
+      "plantedDate": "2025-01-05"
     }
   ]
 }

@@ -6,6 +6,19 @@ const path = require('path');
 
 const CROPS_FILE = path.join(__dirname, 'crops.json');
 const AUTH_FILE = path.join(__dirname, 'auth.json');
+const KB_FILE = path.join(__dirname, 'knowledgebase.json');
+
+function readKB() {
+  try {
+    return JSON.parse(fs.readFileSync(KB_FILE));
+  } catch (e) { return {}; }
+}
+
+function writeKB(data) {
+  try {
+    fs.writeFileSync(KB_FILE, JSON.stringify(data, null, 2));
+  } catch (e) { console.error("KB write error:", e); }
+}
 
 // Initialize auth.json if it doesn't exist
 if (!fs.existsSync(AUTH_FILE)) {
@@ -47,6 +60,16 @@ app.use(cors());
 app.use(express.json());
 
 // --- Auth Routes ---
+
+// Initialize Firebase Admin (Required for Weather routes)
+const serviceAccount = require('./firebase_account_keys.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://agroweather-a1637-default-rtdb.firebaseio.com/'
+});
+
+const db = admin.database();
+
 /**
  * Registers a new user and saves to auth.json
  */
@@ -107,14 +130,12 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// Initialize Firebase Admin
-const serviceAccount = require('./firebase_account_keys.json');
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://agroweather-a1637-default-rtdb.firebaseio.com/'
-});
+// --- API Routes ---
 
-const db = admin.database();
+// GET knowledgebase
+app.get('/api/knowledgebase', (req, res) => {
+  res.json(readKB());
+});
 
 // GET crops for a specific user
 app.get('/api/crops/:userId', (req, res) => {
@@ -132,6 +153,19 @@ app.post('/api/crops/:userId', (req, res) => {
   
   const newCrop = { ...req.body, id: Date.now().toString() };
   allCrops[userId].push(newCrop);
+
+  // Feature in knowledgebase: if it's a new crop name, add a default template
+  const kb = readKB();
+  const cropKey = newCrop.name.toLowerCase();
+  if (!kb[cropKey]) {
+    kb[cropKey] = {
+      totalDays: 90,
+      idealTemp: [20, 30],
+      idealHum: [50, 80],
+      stages: [{ d: 90, n: "Growth", msg: "Standard care instructions." }]
+    };
+    writeKB(kb);
+  }
   
   writeCrops(allCrops);
   res.status(201).json(req.body);
@@ -204,6 +238,16 @@ app.get('/api/weather', async (req, res) => {
     console.error('Error fetching data:', error);
     res.status(500).json({ error: 'Failed to fetch data' });
   }
+});
+
+// --- Static File Serving ---
+// This must come AFTER API routes to prevent shadowing
+app.use(express.static(path.join(__dirname, '../Frontend')));
+
+// Diagnostic: Log any 404s that hit the server
+app.use((req, res) => {
+  console.warn(`404 Not Found: ${req.method} ${req.url}`);
+  res.status(404).send("Route not found on server.");
 });
 
 // Start server

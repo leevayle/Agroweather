@@ -1,0 +1,137 @@
+{
+  "maize": {
+    "totalDays": 120,
+    "idealTemp": [
+      18,
+      30
+    ],
+    "idealHum": [
+      50,
+      70
+    ],
+    "stages": [
+      {
+        "d": 20,
+        "n": "Seedling",
+        "msg": "Watch for cutworms."
+      },
+      {
+        "d": 60,
+        "n": "Vegetative",
+        "msg": "Apply Nitrogen top-dress."
+      },
+      {
+        "d": 90,
+        "n": "Flowering",
+        "msg": "Critical moisture needed for pollination."
+      },
+      {
+        "d": 120,
+        "n": "Maturity",
+        "msg": "Drying stage."
+      }
+    ]
+  },
+  "wheat": {
+    "totalDays": 110,
+    "idealTemp": [
+      15,
+      25
+    ],
+    "idealHum": [
+      40,
+      60
+    ],
+    "stages": [
+      {
+        "d": 30,
+        "n": "Tillering",
+        "msg": "Monitor for rust."
+      },
+      {
+        "d": 70,
+        "n": "Booting",
+        "msg": "Critical water stage."
+      },
+      {
+        "d": 110,
+        "n": "Maturity",
+        "msg": "Harvest when golden."
+      }
+    ]
+  },
+  "kidney beans": {
+    "totalDays": 80,
+    "idealTemp": [
+      18,
+      28
+    ],
+    "idealHum": [
+      60,
+      80
+    ],
+    "stages": [
+      {
+        "d": 25,
+        "n": "Flowering",
+        "msg": "Avoid overhead watering."
+      },
+      {
+        "d": 55,
+        "n": "Pod Fill",
+        "msg": "Check for aphids."
+      },
+      {
+        "d": 80,
+        "n": "Maturity",
+        "msg": "Harvest when brittle."
+      }
+    ]
+  },
+  "mango": {
+    "totalDays": 1095,
+    "idealTemp": [
+      24,
+      32
+    ],
+    "idealHum": [
+      50,
+      80
+    ],
+    "stages": [
+      {
+        "d": 365,
+        "n": "Juvenile",
+        "msg": "Focus on branch structural training."
+      },
+      {
+        "d": 730,
+        "n": "Establishment",
+        "msg": "Ensure consistent deep watering."
+      },
+      {
+        "d": 1095,
+        "n": "First Bloom",
+        "msg": "Monitor for fruit flies."
+      }
+    ]
+  },
+  "soya beans": {
+    "totalDays": 90,
+    "idealTemp": [
+      20,
+      30
+    ],
+    "idealHum": [
+      50,
+      80
+    ],
+    "stages": [
+      {
+        "d": 90,
+        "n": "Growth",
+        "msg": "Standard care instructions."
+      }
+    ]
+  }
+}

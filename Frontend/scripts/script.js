@@ -19,6 +19,7 @@ if (!userData) {
 
 // Global history array for trend estimation and historical data tracking
 window.weatherHistory = [];
+window.cropKnowledgeBase = {};
 
 window.logout = () => {
     localStorage.removeItem('agroweather_user');
@@ -51,6 +52,18 @@ async function fetchData() {
         }
     } catch (error) {
         console.warn('REST fetch failed; falling back to Firebase realtime:', error);
+    }
+}
+
+async function fetchKnowledgeBase() {
+    try {
+        const response = await fetch('http://localhost:3000/api/knowledgebase');
+        if (response.ok) {
+            window.cropKnowledgeBase = await response.json();
+            console.log("Knowledge base loaded successfully.");
+        }
+    } catch (e) {
+        console.warn("Could not load knowledge base", e);
     }
 }
 
@@ -345,66 +358,100 @@ function updateCard(id, value) {
 }
 
 function updatePredictions(data) {
-    // Simple prediction insight generation based on weather conditions
-    const insights = [];
-    const rain = Number(data.rainfall) || 0;
-    const temp = Number(data.temperature) || 20;
-    const humidity = Number(data.humidity) || 50;
-
-    if (rain > 150) {
-        insights.push('Heavy rainfall expected; delay top-dressing and protect seeds from waterlogging.');
-    } else if (rain > 60) {
-        insights.push('Moderate rain forecast; good time for germination and soil moisture recharge.');
-    } else {
-        insights.push('Low rainfall; prepare irrigation for the next 48 hours.');
-    }
-
-    if (temp > 30) {
-        insights.push('High temperature trend; ensure shade management and check evapotranspiration.');
-    } else if (temp < 18) {
-        insights.push('Cool period; avoid nitrogen fertilizer application until temperatures rise.');
-    } else {
-        insights.push('Temperature optimal for growth; consider top dressing in 2-3 days.');
-    }
-
-    if (humidity > 70) {
-        insights.push('High humidity; monitor for fungal disease and consider preventive spraying.');
-    } else if (humidity < 40) {
-        insights.push('Low humidity; irrigation and mulching recommended to conserve moisture.');
-    }
-
-    // Set insight text and optional harvest advice for selected crop.
-    const selectedCrop = window.selectedCrop || 'Maize';
     const insightList = document.getElementById('insights-list');
     if (!insightList) return;
 
+    // Merge rainfall data from rain.js into the data object if available
+    const rainVal = document.getElementById('rain')?.textContent;
+    const currentRain = rainVal && rainVal !== 'N/A' ? Number(rainVal) : (Number(data.rainfall) || 0);
+
+    const selectedCrop = window.selectedCrop || 'Maize';
+    const cropKey = selectedCrop.toLowerCase();
+    
+    const meta = window.cropKnowledgeBase[cropKey] || { totalDays: 90, idealTemp: [20,30], idealHum:[50,80], stages: [{d:90, n:"Growth", msg:"Standard care."}] };
+    const temp = Number(data.temperature) || 20;
+    const hum = Number(data.humidity) || 50;
+
+    const advice = [];
+    const climaticWarnings = [];
+
+    // 1. Lifecycle Tracking
+    const selectedCardEl = document.querySelector('.crop-card.selected');
+    const plantedDateStr = selectedCardEl ? selectedCardEl.dataset.planted : null;
+    
+    let currentDay = 0;
+    let daysLeft = meta.totalDays;
+
+    if (plantedDateStr) {
+        const plantedTs = new Date(plantedDateStr).getTime();
+        const nowTs = Date.now();
+        currentDay = Math.floor((nowTs - plantedTs) / (1000 * 60 * 60 * 24));
+        currentDay = Math.max(0, Math.min(meta.totalDays, currentDay));
+        daysLeft = Math.max(0, meta.totalDays - currentDay);
+    }
+
+    const currentStage = meta.stages.find(s => s.d >= currentDay) || meta.stages[meta.stages.length - 1];
+
+    // 2. Climatic Rule Engine (AI Logic)
+    if (temp > meta.idealTemp[1]) {
+        climaticWarnings.push(`<span style="color:#EB8120">⚠️ Heat Stress:</span> Current temp (${temp}°C) is above the ${selectedCrop} limit. Increase mulching.`);
+    } else if (temp < meta.idealTemp[0]) {
+        climaticWarnings.push(`<span style="color:#3583F1">⚠️ Low Temp:</span> Growth may slow down. Avoid pruning or liquid feeding now.`);
+    }
+
+    if (hum > meta.idealHum[1] && temp > 22) {
+        climaticWarnings.push(`<span style="color:#EB8120">⚠️ Disease Risk:</span> High humidity/warmth intersection. Risk of fungal blight is elevated.`);
+    }
+
+    if (currentRain < 1 && currentDay < meta.totalDays) {
+        advice.push(`<strong>Irrigation:</strong> Day ${currentDay} requires soil moisture. Supplement water today.`);
+    } else if (currentRain > 40) {
+        advice.push(`<strong>Drainage:</strong> High precipitation. Check furrows for stagnant water.`);
+    }
+
+    // 3. Stage-Specific Expert Advice
+    advice.push(`<strong>Stage (${currentStage.n}):</strong> ${currentStage.msg}`);
+
+    // 4. One Month AI Forecast
+    const futureDay = currentDay + 30;
+    let futureInsight = "";
+    if (futureDay >= meta.totalDays) {
+        futureInsight = `<strong>1-Month Outlook:</strong> Harvest window opens! Prepare storage and labor.`;
+    } else {
+        const futureStage = meta.stages.find(s => s.d >= futureDay) || meta.stages[meta.stages.length - 1];
+        futureInsight = `<strong>1-Month Outlook:</strong> Will enter <em>${futureStage.n}</em>. Prepare for: ${futureStage.msg}`;
+    }
+
     insightList.innerHTML = '';
+    
+    // Header info
+    const statusLi = document.createElement('li');
+    statusLi.style.listStyle = 'none';
+    statusLi.style.marginBottom = '10px';
+    statusLi.innerHTML = `
+        <div style="background: rgba(98, 178, 68, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--accent1);">
+            <div style="color:var(--accent1); font-family:poppins-b;">${selectedCrop} - Day ${currentDay}</div>
+            <div style="font-size: 0.85rem;">Estimated ${daysLeft} days until harvest projection.</div>
+        </div>
+    `;
+    insightList.appendChild(statusLi);
 
-    const cropItem = document.createElement('li');
-    cropItem.textContent = `Crop selected: ${selectedCrop}.`;
-    insightList.appendChild(cropItem);
-
-    insights.forEach(text => {
-        const item = document.createElement('li');
-        item.textContent = text;
-        insightList.appendChild(item);
+    // Display Warnings
+    climaticWarnings.forEach(text => {
+        const li = document.createElement('li');
+        li.style.listStyle = 'none';
+        li.style.fontSize = '0.9rem';
+        li.style.marginBottom = '5px';
+        li.innerHTML = text;
+        insightList.appendChild(li);
     });
 
-    const cropAdvice = document.createElement('li');
-    if (selectedCrop.toLowerCase().includes('maize')) {
-        cropAdvice.textContent = 'Maize: check 45-60 day growth stage for top-dress nitrogen; harvest estimate is in 70-90 days.';
-    } else if (selectedCrop.toLowerCase().includes('wheat')) {
-        cropAdvice.textContent = 'Wheat: apply foliar feed if tillering is steady; harvest window around 100-120 days.';
-    } else {
-        cropAdvice.textContent = 'Use crop calendar data for your crop and adjust for predicted moisture/temperature.';
-    }
-    insightList.appendChild(cropAdvice);
-
-    const readinessSummary = document.createElement('li');
-    readinessSummary.textContent = computeReadinessMessage(selectedCrop, window.weatherHistory || []);
-    insightList.appendChild(readinessSummary);
-
-    const insightsPanel = document.getElementById('prediction-insights');
+    // Actionable Advice
+    [...advice, futureInsight].forEach(text => {
+        const li = document.createElement('li');
+        li.innerHTML = text;
+        insightList.appendChild(li);
+    });
 }
 
 function computeReadinessMessage(selectedCrop, history = []) {
@@ -483,6 +530,7 @@ function renderCrops(crops) {
         const card = document.createElement('div');
         card.className = `crop-card ${window.selectedCrop === crop.name ? 'selected' : ''}`;
         card.dataset.crop = crop.name;
+        card.dataset.planted = crop.plantedDate || '';
         
         // Show image if available, otherwise show first letter
         const imageHtml = crop.image 
@@ -536,6 +584,7 @@ function initializeCropWidgets() {
         form.onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('modal-crop-name').value;
+            const plantedDate = document.getElementById('modal-crop-date').value;
             const imageFile = document.getElementById('modal-crop-image').files[0];
             
             let imageData = "";
@@ -555,7 +604,7 @@ function initializeCropWidgets() {
                 await fetch(`http://localhost:3000/api/crops/${currentUser._id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, image: imageData })
+                    body: JSON.stringify({ name, image: imageData, plantedDate })
                 });
                 modal.classList.remove('active');
                 form.reset();
@@ -585,6 +634,9 @@ setInterval(fetchData, 5000);
 
 // Initial fetch
 fetchData();
+
+// Load knowledge base from backend
+fetchKnowledgeBase();
 
 // Start Firebase realtime listener immediately (preferred source)
 enableFirebaseListener();

@@ -1,6 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
+
+const CROPS_FILE = path.join(__dirname, 'crops.json');
+
+// Initialize crops.json with default data if it doesn't exist
+if (!fs.existsSync(CROPS_FILE)) {
+  const initialCrops = [
+    { name: 'Maize', image: 'images/maize.png' },
+    { name: 'Wheat', image: 'images/wheat.png' },
+    { name: 'Kidney Beans', image: 'images/kidney beans.png' },
+    { name: 'Sunflower', image: 'images/sunflower.png' },
+    { name: 'Irish Potatoes', image: 'images/irish potatoes.png' }
+  ];
+  fs.writeFileSync(CROPS_FILE, JSON.stringify(initialCrops, null, 2));
+}
+
+function readCrops() {
+  return JSON.parse(fs.readFileSync(CROPS_FILE));
+}
+
+function writeCrops(crops) {
+  fs.writeFileSync(CROPS_FILE, JSON.stringify(crops, null, 2));
+}
+
+// Initialize Express and Middleware
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
 
 // Initialize Firebase Admin
 const serviceAccount = require('./firebase_account_keys.json');
@@ -10,12 +41,27 @@ admin.initializeApp({
 });
 
 const db = admin.database();
-const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// GET all crops
+app.get('/api/crops', (req, res) => {
+  res.json(readCrops());
+});
+
+// ADD a crop
+app.post('/api/crops', (req, res) => {
+  const crops = readCrops();
+  crops.push(req.body);
+  writeCrops(crops);
+  res.status(201).json(req.body);
+});
+
+// DELETE a crop
+app.delete('/api/crops/:name', (req, res) => {
+  let crops = readCrops();
+  crops = crops.filter(c => c.name !== req.params.name);
+  writeCrops(crops);
+  res.status(200).send();
+});
 
 // POST endpoint for ESP32 to send data 
 app.post('/api/data', async (req, res) => {

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Maize",
+    "image": "images/maize.png"
+  },
+  {
+    "name": "Wheat",
+    "image": "images/wheat.png"
+  },
+  {
+    "name": "Kidney Beans",
+    "image": "images/kidney beans.png"
+  },
+  {
+    "name": "Sunflower",
+    "image": "images/sunflower.png"
+  },
+  {
+    "name": "Irish Potatoes",
+    "image": "images/irish potatoes.png"
+  },
+  {
+    "name": "Mango",
+    "image": ""
+  }
+]

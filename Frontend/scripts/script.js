@@ -204,14 +204,15 @@ function updateUI(data) {
     const humidityEl = document.getElementById('humidity');
     if (humidityEl) humidityEl.textContent = data.humidity != null ? `${data.humidity}` : 'N/A';
 
-    const rainEl = document.getElementById('rain');
-    if (rainEl) rainEl.textContent = data.rainfall != null ? `${data.rainfall}` : 'N/A';
+    // Rain data now handled by rain.js from API
+    // const rainEl = document.getElementById('rain');
+    // if (rainEl) rainEl.textContent = data.rainfall ? `${data.rainfall}` : 'N/A';
 
     // Additional generic card structure (if present in UI)
     updateCard('temperature', data.temperature != null ? `${data.temperature}°C` : 'N/A');
     updateCard('humidity', data.humidity != null ? `${data.humidity}%` : 'N/A');
     updateCard('soil-moisture', data.soilMoisture != null ? `${data.soilMoisture}%` : 'N/A');
-    updateCard('rainfall', data.rainfall != null ? `${data.rainfall} mm` : 'N/A');
+    // updateCard('rainfall', data.rainfall ? `${data.rainfall} mm` : 'N/A'); // Now handled by rain.js
     updateCard('wind-speed', data.windSpeed != null ? `${data.windSpeed} km/h` : 'N/A');
     updateCard('light-intensity', data.lightIntensity != null ? `${data.lightIntensity} lux` : 'N/A');
 

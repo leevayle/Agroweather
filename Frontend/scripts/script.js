@@ -20,8 +20,6 @@ async function fetchData() {
         if (response.ok) {
             const data = await response.json();
             updateUI(data);
-        } else {
-            console.error('Failed to fetch data:', response.status);
         }
     } catch (error) {
         console.warn('REST fetch failed; falling back to Firebase realtime:', error);
@@ -31,7 +29,7 @@ async function fetchData() {
 // Use Firebase Realtime Database to continuously receive sensor data
 function enableFirebaseListener() {
     if (!window.firebaseDatabase) {
-        console.warn('Firebase database not available');
+        console.error('Firebase database not available');
         return;
     }
 
@@ -40,7 +38,9 @@ function enableFirebaseListener() {
         const value = snapshot.val();
         if (!value) return;
 
-        const latest = getLatestWeatherEntry(value);
+        // Use sensorData sub-node if that's where ESP32 pushes
+        const dataToProcess = value.sensorData || value;
+        const latest = getLatestWeatherEntry(dataToProcess);
         if (!latest) return;
 
         // Keep history for readiness estimation
@@ -51,9 +51,12 @@ function enableFirebaseListener() {
         window.weatherHistory.push(latest);
         if (window.weatherHistory.length > 200) window.weatherHistory.shift();
 
+        // If we don't have previous data for the tile, try fetching it from DB
+        checkAndFetchPreviousData(latest);
+
         updateUI(latest);
     }, (err) => {
-        console.error('Firebase listener error', err);
+        console.error('Firebase listener error:', err);
     });
 }
 
@@ -99,16 +102,44 @@ function findClosestHistoryEntry(targetTimestampMs) {
     return closest;
 }
 
+/**
+ * Fetches a single record from the database closest to 1 hour prior to the latest timestamp.
+ */
+async function checkAndFetchPreviousData(latest) {
+    if (!latest || !latest.timestamp) return;
+    
+    // If we already have a previous entry in history, no need to fetch
+    if (getPreviousHourEntry(latest)) return;
+
+    // Fallback to Firestore (Firebase RTDB) to find data from approx 1 hour ago
+    const latestTs = toFirebaseTimestampMs(latest.timestamp);
+    const targetTs = latestTs - (60 * 60 * 1000);
+    try {
+        const snapshot = await window.firebaseDatabase.ref('sensorData')
+            .orderByChild('timestamp')
+            .endAt(targetTs)
+            .limitToLast(1)
+            .once('value');
+
+        const val = snapshot.val();
+        if (val) {
+            const entry = Object.values(val)[0];
+            // Add to local history so getPreviousHourEntry finds it
+            window.weatherHistory.unshift(entry);
+            updateUI(latest); // Refresh UI with the newly found historical data
+        }
+    } catch (e) {
+        console.warn("Could not fetch historical data from Firebase:", e);
+    }
+}
+
 function getPreviousHourEntry(latest) {
     if (!latest || latest.timestamp == null) return null;
 
-    let latestTs = Number(latest.timestamp);
-    if (Number.isNaN(latestTs)) return null;
-    if (latestTs < 1e12) latestTs *= 1000;
+    const latestTs = toFirebaseTimestampMs(latest.timestamp);
+    const targetTs = latestTs - (60 * 60 * 1000);
 
-    const targetTs = latestTs - 60 * 60 * 1000;
     const candidate = findClosestHistoryEntry(targetTs);
-
     if (!candidate || candidate.timestamp == null) return null;
 
     let candidateTs = Number(candidate.timestamp);
@@ -141,13 +172,20 @@ function generateNextHourForecast(latest, previous) {
     let forecastHumidity = currentHumidity;
     let forecastRain = currentRain;
 
+    // If previous data is available, calculate a simple linear trend.
+    // Otherwise, assume current conditions persist for the next hour.
     if (previous && previous.temperature != null) {
         const deltaTemp = currentTemp - Number(previous.temperature);
         forecastTemp = Number((currentTemp + deltaTemp).toFixed(1));
 
         if (currentHumidity != null && previous.humidity != null) {
             const deltaHumidity = currentHumidity - Number(previous.humidity);
+            // Ensure humidity stays within 0-100 range
             forecastHumidity = Number(Math.max(0, Math.min(100, currentHumidity + deltaHumidity)).toFixed(0));
+        } else if (currentHumidity != null) {
+            // If previous humidity is not available, assume current humidity persists
+            forecastHumidity = currentHumidity;
+
         }
 
         if (currentRain != null && previous.rainfall != null) {
@@ -155,13 +193,19 @@ function generateNextHourForecast(latest, previous) {
             forecastRain = Number(Math.max(0, currentRain + deltaRain).toFixed(1));
         }
     }
-
+    // Handle cases where latest.timestamp might be invalid
     let predictionTs = Number(latest.timestamp);
-    if (predictionTs < 1e12) predictionTs *= 1000;
-    predictionTs += 60 * 60 * 1000;
+    if (!predictionTs || isNaN(predictionTs)) {
+        // Fallback to current time + 1 hour if timestamp is invalid
+        predictionTs = Date.now();
+    } else if (predictionTs < 1e12) { // Convert seconds to milliseconds if needed
+        predictionTs *= 1000;
+    }
+    
+    const finalPredictionTs = predictionTs + (60 * 60 * 1000);
 
     return {
-        timestamp: predictionTs,
+        timestamp: finalPredictionTs,
         temperature: forecastTemp,
         humidity: forecastHumidity,
         rainfall: forecastRain
@@ -199,10 +243,14 @@ function getIconPathForPhase(phase) {
 function updateUI(data) {
     // Numeric card placeholders (existing dashboard values)
     const tempEl = document.getElementById('temp');
-    if (tempEl) tempEl.textContent = data.temperature != null ? `${data.temperature}` : 'N/A';
+    if (tempEl) {
+        tempEl.textContent = data.temperature != null ? `${data.temperature}` : 'N/A';
+    }
 
     const humidityEl = document.getElementById('humidity');
-    if (humidityEl) humidityEl.textContent = data.humidity != null ? `${data.humidity}` : 'N/A';
+    if (humidityEl) {
+        humidityEl.textContent = data.humidity != null ? `${data.humidity}` : 'N/A';
+    }
 
     // Rain data now handled by rain.js from API
     // const rainEl = document.getElementById('rain');
@@ -236,7 +284,7 @@ function updateUI(data) {
         setTileIcon('prev-icon', getIconPathForPhase(getDayPhase(previousEntryLocal.timestamp)));
     } else {
         setTileText('prev-temp', 'N/A');
-        setTileText('prev-time', 'Loading...');
+        setTileText('prev-time', 'No previous data');
         setTileIcon('prev-icon', getIconPathForPhase('neither'));
     }
 
@@ -325,9 +373,6 @@ function updatePredictions(data) {
     insightList.appendChild(readinessSummary);
 
     const insightsPanel = document.getElementById('prediction-insights');
-    if (insightsPanel && insightsPanel.hidden) {
-        insightsPanel.hidden = false;
-    }
 }
 
 function computeReadinessMessage(selectedCrop, history = []) {
@@ -380,26 +425,108 @@ function formatTime(ts) {
 // User crop selection state
 window.selectedCrop = 'Maize';
 
-function initializeCropWidgets() {
-    const cropCards = document.querySelectorAll('.crop-card');
-    cropCards.forEach(card => {
+async function fetchCrops() {
+    try {
+        const response = await fetch('http://localhost:3000/api/crops');
+        if (response.ok) {
+            const crops = await response.json();
+            renderCrops(crops);
+        }
+    } catch (e) {
+        console.warn("Failed to fetch crops", e);
+    }
+}
+
+function renderCrops(crops) {
+    const container = document.getElementById('predictions-cards');
+    const addCard = document.getElementById('add-crop-card');
+    if (!container || !addCard) return;
+
+    // Remove old crop cards (everything except addCard)
+    const oldCards = container.querySelectorAll('.crop-card:not(.add-crop)');
+    oldCards.forEach(c => c.remove());
+
+    crops.forEach(crop => {
+        const card = document.createElement('div');
+        card.className = `crop-card ${window.selectedCrop === crop.name ? 'selected' : ''}`;
+        card.dataset.crop = crop.name;
+        
+        // Show image if available, otherwise show first letter
+        const imageHtml = crop.image 
+            ? `<img src="${crop.image}" alt="${crop.name}" class="crop-icon">`
+            : `<div class="crop-initial">${crop.name.charAt(0)}</div>`;
+
+        card.innerHTML = `
+            <button class="delete-crop" data-crop="${crop.name}">&times;</button>
+            ${imageHtml}
+            <div class="crop-name">${crop.name}</div>
+        `;
+        
         card.addEventListener('click', (e) => {
-            if (card.classList.contains('add-crop')) {
-                const name = prompt('Add crop name (e.g., Tomato)');
-                if (!name) return;
-                const newCard = document.createElement('div');
-                newCard.className = 'crop-card';
-                newCard.dataset.crop = name;
-                newCard.innerHTML = `<div class="crop-icon" style="font-size: 14px;color:#A2D200;">🌱</div><div class="crop-name">${name}</div>`;
-                card.before(newCard);
-                initializeCropWidgets();
+            if (e.target.classList.contains('delete-crop')) {
+                deleteCrop(crop.name);
                 return;
             }
             document.querySelectorAll('.crop-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            window.selectedCrop = card.dataset.crop || 'Maize';
+            window.selectedCrop = crop.name;
+            if (window.latestWeatherData) updatePredictions(window.latestWeatherData);
         });
+
+        addCard.before(card);
     });
+}
+
+async function deleteCrop(name) {
+    if (!confirm(`Delete ${name}?`)) return;
+    try {
+        await fetch(`http://localhost:3000/api/crops/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        fetchCrops();
+    } catch (e) { console.error(e); }
+}
+
+function initializeCropWidgets() {
+    const addCard = document.getElementById('add-crop-card');
+    const modal = document.getElementById('crop-modal');
+    const closeBtn = document.getElementById('close-modal');
+    const form = document.getElementById('add-crop-form');
+
+    if (addCard && modal) {
+        addCard.onclick = () => modal.classList.add('active');
+    }
+    if (closeBtn && modal) {
+        closeBtn.onclick = () => modal.classList.remove('active');
+    }
+
+    if (form && modal) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('modal-crop-name').value;
+            const imageFile = document.getElementById('modal-crop-image').files[0];
+            
+            let imageData = "";
+            
+            // If a file was selected, convert it to Base64 to store in our JSON DB
+            if (imageFile) {
+                imageData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(imageFile);
+                });
+            }
+
+            try {
+                await fetch('http://localhost:3000/api/crops', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, image: imageData })
+                });
+                modal.classList.remove('active');
+                form.reset();
+                fetchCrops();
+            } catch (err) { console.error(err); }
+        };
+    }
 
     const seePredictions = document.getElementById('see-predictions');
     if (seePredictions) {
@@ -427,3 +554,6 @@ fetchData();
 enableFirebaseListener();
 
 initializeCropWidgets();
+
+// Load crops from backend
+fetchCrops();

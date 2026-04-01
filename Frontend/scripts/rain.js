@@ -27,7 +27,9 @@ function updateRainUI(rainAmount) {
         rainEl.textContent = rainAmount != null ? `${rainAmount}` : 'N/A';
     }
     // Also update the card if present
-    updateCard('rainfall', rainAmount != null ? `${rainAmount} mm` : 'N/A');
+    if (typeof updateCard === 'function') {
+        updateCard('rainfall', rainAmount != null ? `${rainAmount} mm` : 'N/A');
+    }
 }
 
 // Function to be called periodically or on demand

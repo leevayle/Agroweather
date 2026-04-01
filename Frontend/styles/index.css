@@ -22,6 +22,9 @@
     --button-text: #333;
 }
 
+
+/* FONTS */
+
 @font-face {
     font-family: visby-round;
     src: url(../fonts/visby-round.OTF);
@@ -33,6 +36,50 @@
 @font-face {
     font-family: poppins-b;
     src: url(../fonts/POPPINS-BOLD.TTF);
+}
+
+/* Skeleton / Shimmer Loading Effect */
+.skeleton {
+    background: linear-gradient(90deg, #1F2227 25%, #2A2E3B 50%, #1F2227 75%) !important;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    color: transparent !important;
+    border: none !important;
+}
+
+/* Hide all children of a skeleton block until data is loaded */
+.skeleton > * {
+    visibility: hidden;
+}
+
+.skeleton-blue {
+    background: linear-gradient(90deg, #3583F1 25%, #4EBFFE 50%, #3583F1 75%) !important;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border: none !important;
+}
+
+.skeleton-green {
+    background: linear-gradient(90deg, #62B244 25%, #8AC926 50%, #62B244 75%) !important;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border: none !important;
+}
+
+.skeleton-orange {
+    background: linear-gradient(90deg, #EB8120 25%, #FFB347 50%, #EB8120 75%) !important;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border: none !important;
+}
+
+.skeleton-circle {
+    border-radius: 50% !important;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 
@@ -373,6 +420,7 @@ header {
 }
 .crop-card {
     cursor: pointer;
+    position: relative;
 }
 .crop-card.selected,
 .crop-card:hover {
@@ -383,6 +431,22 @@ header {
     width: 45px;
     height: 45px;
     margin-bottom: 8px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.crop-initial {
+    width: 45px;
+    height: 45px;
+    background: var(--accent1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-family: 'poppins-b';
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
 .crop-name {
     font-family: 'poppins-l', sans-serif;
@@ -398,6 +462,61 @@ header {
     font-family: 'poppins-b', sans-serif;
     font-size: 1.8rem;
 }
+
+.delete-crop {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+.crop-card:hover .delete-crop {
+    display: flex;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+.modal.active { display: flex; }
+.modal-content {
+    background: #1F2227;
+    padding: 25px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid #434B5A;
+    font-family: poppins-l;
+}
+.modal-content h3 { color: var(--accent1); margin-top: 0; font-family: poppins-b; }
+.form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+.form-group label { color: var(--off-white); font-size: 0.9rem; }
+.form-group input { 
+    background: #2A2E3B; 
+    border: 1px solid #434B5A; 
+    color: white; 
+    padding: 10px; 
+    border-radius: 8px; 
+}
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.btn-cancel { background: transparent; border: 1px solid #434B5A; color: var(--off-white); padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+.btn-submit { background: var(--accent1); border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
 .prediction-insights {
     margin-top: 18px;
     padding: 12px;

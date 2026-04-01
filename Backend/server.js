@@ -104,7 +104,6 @@ app.post('/api/data', async (req, res) => {
 // GET endpoint for frontend to fetch data
 app.get('/api/weather', async (req, res) => {
   try {
-    // Fetch the latest data (assuming ordered by key, latest first)
     const snapshot = await db.ref('sensorData').orderByKey().limitToLast(1).once('value');
 
     if (!snapshot.exists()) {

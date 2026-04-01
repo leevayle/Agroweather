@@ -34,7 +34,7 @@
         <main class="main ">
             <div class="mtop ">
                 <div class="mtop1 ">
-                    <div class="now">
+                    <div id="main-icon-container" class="now">
                         <img id="main-icon" src="images/icons/day/01.png" alt="Temperature Icon" class="full">
                     </div>
                     
@@ -42,12 +42,12 @@
 
 
 
-                <div class="mtop2 ">
+                <div class="mtop2  ">
                     
 
 
                     <div class="more-values ">
-                        <div class="more-values-inner ">
+                        <div class="more-values-inner" id="dashboard-values">
                             <div class="more-values-1">
                                 <div class="more-values-limiter ">
                                     <div class="more-values-icon ">
@@ -57,7 +57,7 @@
                                             <path opacity="0.7" d="M14.25 7.5C14.25 5.15279 16.1528 3.25 18.5 3.25C20.8472 3.25 22.75 5.15279 22.75 7.5C22.75 9.84721 20.8472 11.75 18.5 11.75H2C1.58579 11.75 1.25 11.4142 1.25 11C1.25 10.5858 1.58579 10.25 2 10.25H18.5C20.0188 10.25 21.25 9.01878 21.25 7.5C21.25 5.98122 20.0188 4.75 18.5 4.75C16.9812 4.75 15.75 5.98122 15.75 7.5V8C15.75 8.41421 15.4142 8.75 15 8.75C14.5858 8.75 14.25 8.41421 14.25 8V7.5Z" fill="#cccccc"/>
                                             </svg>
                                     </div>
-                                    <div id="temp" class="more-values-bold ">
+                                    <div id="temp" class="more-values-bold">
                                         31.3
                                     </div>
                                     <div class="more-values-faint ">
@@ -73,7 +73,7 @@
                                     <div class="more-values-icon ">
                                         <img class="icon" src="images/drop.png" >
                                     </div>
-                                    <div id="humidity" class="more-values-bold ">
+                                    <div id="humidity" class="more-values-bold">
                                        45
                                     </div>
                                     <div class="more-values-faint ">
@@ -89,7 +89,7 @@
                                     <div class="more-values-icon ">
                                         <img class="icon" src="images/icons/day/03.png" >
                                     </div>
-                                    <div id="rain" class="more-values-bold ">
+                                    <div id="rain" class="more-values-bold">
                                         0
                                     </div>
                                     <div class="more-values-faint ">
@@ -107,37 +107,37 @@
                 <div class="mtop3 ">
 
                     <div class="bottom-tiles-cont ">
-                            <div  class="tiles ">
-                                <div id="next-temp" class="tiles-top ">
+                            <div id="next-tile" class="tiles">
+                                <div id="next-temp" class="tiles-top">
                                     28.5˚
                                 </div>
-                                <div class="tiles-mid ">
+                                <div class="tiles-mid">
                                     <img id="next-icon" class="full" src="images/icons/day/01.png">
                                 </div>
-                                <div id="next-time" class="tiles-bottom ">
-                                    11:33
+                                <div id="next-time" class="tiles-bottom">
+                                    _ _ : _ _
                                 </div>
                             </div>
-                            <div id="now" class="tiles ">
+                            <div id="now" class="tiles">
                                 <div id="temp-now" class="tiles-top now1">
                                     31.3˚
                                 </div>
-                                <div class="tiles-mid ">
+                                <div class="tiles-mid">
                                     <img id="current-icon" class="full" src="images/icons/day/02.png">
                                 </div>
                                 <div id="current-time"  class="tiles-bottom now1">
-                                    11:33
+                                    _ _ : _ _
                                 </div>
                             </div>
-                            <div class="tiles ">
-                                <div id="prev-temp" class="tiles-top ">
+                            <div id="prev-tile" class="tiles">
+                                <div id="prev-temp" class="tiles-top">
                                     28.5˚
                                 </div>
-                                <div class="tiles-mid ">
+                                <div class="tiles-mid">
                                     <img id="prev-icon" class="full" src="images/icons/day/03.png">
                                 </div>
-                                <div id="prev-time" class="tiles-bottom ">
-                                    10:33
+                                <div id="prev-time" class="tiles-bottom">
+                                    _ _ : _ _
                                 </div>
                             </div>
                            
@@ -152,26 +152,6 @@
                         <a href="#" class="see-predictions" id="see-predictions">See predictions &#8250;</a>
                     </div>
                     <div class="predictions-cards" id="predictions-cards">
-                        <div class="crop-card" data-crop="Maize">
-                            <img src="images/maize.png" alt="Maize" class="crop-icon">
-                            <div class="crop-name">Maize</div>
-                        </div>
-                        <div class="crop-card" data-crop="Wheat">
-                            <img src="images/wheat.png" alt="Wheat" class="crop-icon">
-                            <div class="crop-name">Wheat</div>
-                        </div>
-                        <div class="crop-card" data-crop="Kidney Beans">
-                            <img src="images/kidney beans.png" alt="Kidney Beans" class="crop-icon">
-                            <div class="crop-name">Kidney Beans</div>
-                        </div>
-                        <div class="crop-card" data-crop="Sunflower">
-                            <img src="images/sunflower.png" alt="Sunflower" class="crop-icon">
-                            <div class="crop-name">Sunflower</div>
-                        </div>
-                        <div class="crop-card" data-crop="Irish Potatoes">
-                            <img src="images/irish potatoes.png" alt="Irish Potatoes" class="crop-icon">
-                            <div class="crop-name">Irish Potatoes</div>
-                        </div>
                         <div class="crop-card add-crop" id="add-crop-card">
                             <div class="add-sign">+</div>
                         </div>
@@ -185,6 +165,27 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal for Adding Crops -->
+    <div id="crop-modal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Crop</h3>
+            <form id="add-crop-form">
+                <div class="form-group">
+                    <label>Crop Name</label>
+                    <input type="text" id="modal-crop-name" placeholder="e.g. Tomato" required>
+                </div>
+                <div class="form-group">
+                    <label>Crop Picture</label>
+                    <input type="file" id="modal-crop-image" accept="image/*">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="close-modal" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-submit">Add Crop</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

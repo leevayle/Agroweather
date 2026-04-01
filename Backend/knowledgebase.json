@@ -116,22 +116,398 @@
       }
     ]
   },
-  "soya beans": {
-    "totalDays": 90,
-    "idealTemp": [
-      20,
-      30
-    ],
-    "idealHum": [
-      50,
-      80
-    ],
+  "soybeans": {
+    "totalDays": 100,
+    "idealTemp": [20, 30],
+    "idealHum": [50, 80],
     "stages": [
-      {
-        "d": 90,
-        "n": "Growth",
-        "msg": "Standard care instructions."
-      }
+      { "d": 15, "n": "Germination", "msg": "Ensure soil is warm; watch for birds." },
+      { "d": 45, "n": "Vegetative", "msg": "Nodule formation begins; check for leaf-eaters." },
+      { "d": 75, "n": "Flowering", "msg": "Critical water stage; do not let soil dry out." },
+      { "d": 100, "n": "Maturity", "msg": "Pods turn brown; harvest when seeds rattle." }
+    ]
+  },
+  "coffee": {
+    "totalDays": 1460,
+    "idealTemp": [18, 24],
+    "idealHum": [60, 85],
+    "stages": [
+      { "d": 365, "n": "Nursery", "msg": "Focus on root development and shade." },
+      { "d": 730, "n": "Establishment", "msg": "Prune primary branches to encourage spread." },
+      { "d": 1095, "n": "First Flowering", "msg": "Maintain high organic mulch levels." },
+      { "d": 1460, "n": "Production", "msg": "Harvest red 'cherries' only." }
+    ]
+  },
+  "spinach": {
+    "totalDays": 45,
+    "idealTemp": [15, 22],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 10, "n": "Seedling", "msg": "Thin out crowded plants." },
+      { "d": 25, "n": "Vegetative", "msg": "Apply nitrogen-rich organic fertilizer." },
+      { "d": 45, "n": "Maturity", "msg": "Harvest outside leaves to encourage growth." }
+    ]
+  },
+  "tomato": {
+    "totalDays": 90,
+    "idealTemp": [18, 27],
+    "idealHum": [60, 85],
+    "stages": [
+      { "d": 20, "n": "Seedling", "msg": "Transplant to main field; use support stakes." },
+      { "d": 45, "n": "Flowering", "msg": "Risk of Blossom End Rot; ensure calcium supply." },
+      { "d": 70, "n": "Fruit Set", "msg": "Increase watering consistency." },
+      { "d": 90, "n": "Ripening", "msg": "Reduce nitrogen; harvest when fully colored." }
+    ]
+  },
+  "onion": {
+    "totalDays": 120,
+    "idealTemp": [13, 24],
+    "idealHum": [60, 70],
+    "stages": [
+      { "d": 30, "n": "Establishment", "msg": "Keep beds weed-free; onions compete poorly." },
+      { "d": 60, "n": "Vegetative", "msg": "Check for thrips and downy mildew." },
+      { "d": 90, "n": "Bulb Initiation", "msg": "Stop nitrogen application to prevent rot." },
+      { "d": 120, "n": "Maturity", "msg": "Harvest when 50% of tops have fallen over." }
+    ]
+  },
+  "cabbage": {
+    "totalDays": 100,
+    "idealTemp": [15, 20],
+    "idealHum": [60, 90],
+    "stages": [
+      { "d": 25, "n": "Transplant", "msg": "Apply cutworm protection." },
+      { "d": 50, "n": "Cupping", "msg": "Regular watering is essential for head formation." },
+      { "d": 80, "n": "Heading", "msg": "Check for diamondback moth larvae." },
+      { "d": 100, "n": "Maturity", "msg": "Harvest when heads are firm to pressure." }
+    ]
+  },
+  "carrot": {
+    "totalDays": 75,
+    "idealTemp": [15, 21],
+    "idealHum": [70, 80],
+    "stages": [
+      { "d": 15, "n": "Emergence", "msg": "Keep soil moist to prevent crusting." },
+      { "d": 40, "n": "Root Expansion", "msg": "Thin to 5cm apart; avoid high nitrogen." },
+      { "d": 75, "n": "Maturity", "msg": "Shoulder width should be approx 2cm." }
+    ]
+  },
+  "rice": {
+    "totalDays": 150,
+    "idealTemp": [20, 35],
+    "idealHum": [70, 90],
+    "stages": [
+      { "d": 30, "n": "Tillering", "msg": "Maintain water level at 5-10cm." },
+      { "d": 70, "n": "Stem Elongation", "msg": "Apply top-dress urea." },
+      { "d": 120, "n": "Heading", "msg": "Protect from birds." },
+      { "d": 150, "n": "Maturity", "msg": "Drain field 2 weeks before harvest." }
+    ]
+  },
+  "kale": {
+    "totalDays": 60,
+    "idealTemp": [15, 25],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 15, "n": "Seedling", "msg": "Watch for aphids on undersides of leaves." },
+      { "d": 30, "n": "Vegetative", "msg": "Pick older leaves first." },
+      { "d": 60, "n": "Maturity", "msg": "Regular harvesting prevents bolting." }
+    ]
+  },
+  "pepper": {
+    "totalDays": 110,
+    "idealTemp": [21, 32],
+    "idealHum": [60, 75],
+    "stages": [
+      { "d": 30, "n": "Seedling", "msg": "Maintain high light levels." },
+      { "d": 60, "n": "Flowering", "msg": "Mist plants if humidity is too low." },
+      { "d": 90, "n": "Fruit Set", "msg": "Provide support for heavy fruit." },
+      { "d": 110, "n": "Maturity", "msg": "Harvest when color transition is complete." }
+    ]
+  },
+  "sweet potato": {
+    "totalDays": 120,
+    "idealTemp": [21, 26],
+    "idealHum": [70, 80],
+    "stages": [
+      { "d": 20, "n": "Vining", "msg": "Ensure vines have space to spread." },
+      { "d": 60, "n": "Tuber Initiation", "msg": "Avoid nitrogen; focus on potassium." },
+      { "d": 120, "n": "Maturity", "msg": "Harvest before first frost or when vines yellow." }
+    ]
+  },
+  "cassava": {
+    "totalDays": 365,
+    "idealTemp": [25, 30],
+    "idealHum": [65, 85],
+    "stages": [
+      { "d": 30, "n": "Sprouting", "msg": "Ensure cuttings are not waterlogged." },
+      { "d": 180, "n": "Tuberization", "msg": "Maintain weed-free environment." },
+      { "d": 365, "n": "Maturity", "msg": "Harvest when starch content is highest." }
+    ]
+  },
+  "banana": {
+    "totalDays": 365,
+    "idealTemp": [26, 30],
+    "idealHum": [75, 85],
+    "stages": [
+      { "d": 90, "n": "Sucker Stage", "msg": "Remove excess suckers; leave only one." },
+      { "d": 180, "n": "Vegetative", "msg": "Apply potash fertilizer monthly." },
+      { "d": 270, "n": "Flowering", "msg": "Support the bunch with a prop." },
+      { "d": 365, "n": "Maturity", "msg": "Harvest when fingers turn light green." }
+    ]
+  },
+  "sorghum": {
+    "totalDays": 110,
+    "idealTemp": [24, 30],
+    "idealHum": [40, 60],
+    "stages": [
+      { "d": 20, "n": "Seedling", "msg": "Extremely drought tolerant; do not overwater." },
+      { "d": 50, "n": "Boot Stage", "msg": "Check for midge and head-bugs." },
+      { "d": 80, "n": "Grain Fill", "msg": "Protect grain heads from birds." },
+      { "d": 110, "n": "Maturity", "msg": "Harvest when grain is hard to fingernail." }
+    ]
+  },
+  "strawberry": {
+    "totalDays": 90,
+    "idealTemp": [15, 25],
+    "idealHum": [60, 75],
+    "stages": [
+      { "d": 20, "n": "Establishment", "msg": "Remove first flowers to strengthen plant." },
+      { "d": 50, "n": "Runner Stage", "msg": "Pin runners down to create new plants." },
+      { "d": 70, "n": "Fruiting", "msg": "Use straw mulch to keep fruit off soil." },
+      { "d": 90, "n": "Maturity", "msg": "Pick daily once red." }
+    ]
+  },
+  "watermelon": {
+    "totalDays": 85,
+    "idealTemp": [22, 33],
+    "idealHum": [50, 70],
+    "stages": [
+      { "d": 20, "n": "Vining", "msg": "Provide deep watering once a week." },
+      { "d": 45, "n": "Flowering", "msg": "Pollination by bees is mandatory." },
+      { "d": 70, "n": "Fruit Growth", "msg": "Rotate fruit carefully to prevent rot." },
+      { "d": 85, "n": "Maturity", "msg": "Harvest when tendril nearest fruit dries up." }
+    ]
+  },
+  "cucumber": {
+    "totalDays": 60,
+    "idealTemp": [18, 30],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 15, "n": "Climbing", "msg": "Train onto trellis or fence." },
+      { "d": 40, "n": "Flowering", "msg": "Check for cucumber beetles." },
+      { "d": 60, "n": "Maturity", "msg": "Harvest frequently to keep plant producing." }
+    ]
+  },
+  "garlic": {
+    "totalDays": 240,
+    "idealTemp": [10, 24],
+    "idealHum": [50, 70],
+    "stages": [
+      { "d": 60, "n": "Rooting", "msg": "Requires a cold period for bulb division." },
+      { "d": 180, "n": "Bulb Expansion", "msg": "Remove flower stalks (scapes)." },
+      { "d": 240, "n": "Maturity", "msg": "Stop watering 3 weeks before harvest." }
+    ]
+  },
+  "ginger": {
+    "totalDays": 300,
+    "idealTemp": [25, 30],
+    "idealHum": [70, 90],
+    "stages": [
+      { "d": 60, "n": "Sprouting", "msg": "Needs heavy shade and high humidity." },
+      { "d": 180, "n": "Rhizome Growth", "msg": "Keep soil rich in organic matter." },
+      { "d": 300, "n": "Maturity", "msg": "Harvest when leaves turn yellow and die." }
+    ]
+  },
+  "avocado": {
+    "totalDays": 1095,
+    "idealTemp": [18, 28],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 365, "n": "Sapling", "msg": "Protect from strong winds and frost." },
+      { "d": 730, "n": "Vegetative", "msg": "Apply organic manure; prune for light penetration." },
+      { "d": 1095, "n": "First Fruit", "msg": "Monitor for thrips and false codling moth." }
+    ]
+  },
+  "tea": {
+    "totalDays": 1095,
+    "idealTemp": [13, 25],
+    "idealHum": [70, 90],
+    "stages": [
+      { "d": 365, "n": "Establishment", "msg": "Ensure high soil acidity (pH 4.5-5.5)." },
+      { "d": 730, "n": "Tipping", "msg": "Form a flat plucking table." },
+      { "d": 1095, "n": "Production", "msg": "Harvest two leaves and a bud regularly." }
+    ]
+  },
+  "macadamia": {
+    "totalDays": 1825,
+    "idealTemp": [20, 30],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 365, "n": "Juvenile", "msg": "Stake the trees to ensure straight growth." },
+      { "d": 1095, "n": "Pre-flowering", "msg": "Check for stink bugs." },
+      { "d": 1825, "n": "Maturity", "msg": "Harvest nuts when they fall naturally." }
+    ]
+  },
+  "green grams": {
+    "totalDays": 75,
+    "idealTemp": [25, 35],
+    "idealHum": [40, 60],
+    "stages": [
+      { "d": 15, "n": "Establishment", "msg": "Weed early; ndengu is sensitive to competition." },
+      { "d": 45, "n": "Podding", "msg": "Check for pod borers." },
+      { "d": 75, "n": "Maturity", "msg": "Harvest when pods turn black/brown." }
+    ]
+  },
+  "passion fruit": {
+    "totalDays": 365,
+    "idealTemp": [18, 25],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 60, "n": "Trellising", "msg": "Train vines onto wires immediately." },
+      { "d": 180, "n": "Flowering", "msg": "Prune lateral branches to encourage flowering." },
+      { "d": 365, "n": "Maturity", "msg": "Harvest when fruit turns purple/yellow and drops." }
+    ]
+  },
+  "pineapple": {
+    "totalDays": 540,
+    "idealTemp": [22, 32],
+    "idealHum": [70, 80],
+    "stages": [
+      { "d": 180, "n": "Vegetative", "msg": "Apply high nitrogen fertilizer." },
+      { "d": 360, "n": "Induction", "msg": "Natural or forced flowering phase." },
+      { "d": 540, "n": "Maturity", "msg": "Harvest when the base shows golden yellow." }
+    ]
+  },
+  "papaya": {
+    "totalDays": 270,
+    "idealTemp": [21, 33],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 30, "n": "Seedling", "msg": "Remove male plants if not hermaphrodite." },
+      { "d": 150, "n": "Fruit Set", "msg": "Thin out excess fruit to increase size." },
+      { "d": 270, "n": "Maturity", "msg": "Harvest when fruit shows yellow stripes." }
+    ]
+  },
+  "spider plant": {
+    "totalDays": 45,
+    "idealTemp": [18, 25],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 15, "n": "Establishment", "msg": "Apply top-dress for leaf production." },
+      { "d": 45, "n": "Harvest", "msg": "Pick leaves regularly to prevent seeding." }
+    ]
+  },
+  "nightshade": {
+    "totalDays": 55,
+    "idealTemp": [15, 25],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 20, "n": "Seedling", "msg": "Watch for flea beetles." },
+      { "d": 55, "n": "Maturity", "msg": "Harvest managu before berries turn black." }
+    ]
+  },
+  "pigeon peas": {
+    "totalDays": 180,
+    "idealTemp": [18, 30],
+    "idealHum": [50, 75],
+    "stages": [
+      { "d": 60, "n": "Vegetative", "msg": "Deep taproot forming; drought tolerance increasing." },
+      { "d": 120, "n": "Flowering", "msg": "Monitor for pod suckers." },
+      { "d": 180, "n": "Maturity", "msg": "Harvest dry pods for storage." }
+    ]
+  },
+  "finger millet": {
+    "totalDays": 120,
+    "idealTemp": [18, 28],
+    "idealHum": [50, 70],
+    "stages": [
+      { "d": 30, "n": "Thinning", "msg": "Ensure spacing for better grain heads." },
+      { "d": 80, "n": "Heading", "msg": "Critical period for moisture." },
+      { "d": 120, "n": "Maturity", "msg": "Harvest wimbi when heads turn brown." }
+    ]
+  },
+  "arrowroot": {
+    "totalDays": 240,
+    "idealTemp": [20, 30],
+    "idealHum": [75, 90],
+    "stages": [
+      { "d": 60, "n": "Sprouting", "msg": "Maintain high soil moisture (muddy conditions)." },
+      { "d": 180, "n": "Corm Growth", "msg": "Mulch heavily to keep soil cool." },
+      { "d": 240, "n": "Maturity", "msg": "Harvest nduma when leaves start to yellow." }
+    ]
+  },
+  "sugarcane": {
+    "totalDays": 450,
+    "idealTemp": [20, 35],
+    "idealHum": [70, 90],
+    "stages": [
+      { "d": 90, "n": "Tillering", "msg": "Earthing up to support stalks." },
+      { "d": 300, "n": "Elongation", "msg": "Check for smut disease." },
+      { "d": 450, "n": "Maturity", "msg": "Sugar content peaks; harvest before flowering." }
+    ]
+  },
+  "zucchini": {
+    "totalDays": 55,
+    "idealTemp": [18, 28],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 20, "n": "Flowering", "msg": "Bee activity needed for pollination." },
+      { "d": 55, "n": "Harvest", "msg": "Harvest courgettes when 15-20cm long." }
+    ]
+  },
+  "pumpkin": {
+    "totalDays": 100,
+    "idealTemp": [20, 30],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 40, "n": "Vining", "msg": "Avoid stepping on the vines." },
+      { "d": 100, "n": "Maturity", "msg": "Harvest when skin is too hard to pierce with a nail." }
+    ]
+  },
+  "eggplant": {
+    "totalDays": 120,
+    "idealTemp": [21, 30],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 45, "n": "Fruit Set", "msg": "Monitor for red spider mites." },
+      { "d": 120, "n": "Maturity", "msg": "Harvest brinjal when skin is glossy." }
+    ]
+  },
+  "broccoli": {
+    "totalDays": 90,
+    "idealTemp": [13, 20],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 30, "n": "Establishment", "msg": "Keep roots cool with mulch." },
+      { "d": 90, "n": "Maturity", "msg": "Harvest before flower buds open." }
+    ]
+  },
+  "lettuce": {
+    "totalDays": 45,
+    "idealTemp": [15, 22],
+    "idealHum": [60, 80],
+    "stages": [
+      { "d": 15, "n": "Vegetative", "msg": "Needs consistent water to avoid bitterness." },
+      { "d": 45, "n": "Harvest", "msg": "Harvest early morning for crispness." }
+    ]
+  },
+  "grapes": {
+    "totalDays": 730,
+    "idealTemp": [15, 32],
+    "idealHum": [50, 70],
+    "stages": [
+      { "d": 365, "n": "Dormancy", "msg": "Main pruning season." },
+      { "d": 540, "n": "Veraison", "msg": "Berries soften and change color." },
+      { "d": 730, "n": "Maturity", "msg": "Harvest based on sugar/Brix levels." }
+    ]
+  },
+  "barley": {
+    "totalDays": 120,
+    "idealTemp": [12, 24],
+    "idealHum": [50, 70],
+    "stages": [
+      { "d": 30, "n": "Tillering", "msg": "Top-dress with Nitrogen." },
+      { "d": 90, "n": "Dough Stage", "msg": "Kernel is firm but can be squashed." },
+      { "d": 120, "n": "Maturity", "msg": "Harvest when moisture is below 14%." }
     ]
   }
 }

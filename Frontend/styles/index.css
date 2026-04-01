@@ -524,6 +524,19 @@ header {
     border: 1px solid rgba(129,143,166,0.3);
     border-radius: 12px;
 }
+.water-chart-wrapper {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(31, 34, 39, 0.5);
+    border-radius: 15px;
+    border: 1px solid #434B5A;
+    height: 220px;
+}
+.water-chart-wrapper h4 {
+    margin-top: 0;
+    color: var(--accent1);
+    font-family: 'poppins-b';
+}
 .prediction-insights h4 {
     margin-top: 0;
     margin-bottom: 8px;

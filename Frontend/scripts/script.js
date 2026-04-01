@@ -20,6 +20,7 @@ if (!userData) {
 // Global history array for trend estimation and historical data tracking
 window.weatherHistory = [];
 window.cropKnowledgeBase = {};
+window.irrigationChart = null;
 
 window.logout = () => {
     localStorage.removeItem('agroweather_user');
@@ -61,6 +62,8 @@ async function fetchKnowledgeBase() {
         if (response.ok) {
             window.cropKnowledgeBase = await response.json();
             console.log("Knowledge base loaded successfully.");
+            // Refresh predictions once the knowledge base rules are available
+            if (window.latestWeatherData) updatePredictions(window.latestWeatherData);
         }
     } catch (e) {
         console.warn("Could not load knowledge base", e);
@@ -347,6 +350,12 @@ function updateUI(data) {
 
     // Update prediction panel with simple near-term forecast
     updatePredictions(data);
+
+    // Keep the chart updated if it's currently visible
+    const chartPanel = document.getElementById('water-chart-wrapper');
+    if (chartPanel && !chartPanel.hidden) {
+        updateWaterChart(window.selectedCrop);
+    }
 }
 
 function updateCard(id, value) {
@@ -454,6 +463,79 @@ function updatePredictions(data) {
     });
 }
 
+async function updateWaterChart(selectedCrop) {
+    const ctx = document.getElementById('waterChart');
+    if (!ctx) return;
+
+    const cropKey = selectedCrop.toLowerCase();
+    const kb = window.cropKnowledgeBase[cropKey] || { totalDays: 90 };
+    
+    // 1. Fetch 7-day precipitation forecast
+    let dailyRain = new Array(7).fill(0);
+    let labels = [];
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=-0.6773&longitude=34.7796&daily=precipitation_sum&timezone=auto`;
+        const res = await fetch(url);
+        const weather = await res.json();
+        dailyRain = weather.daily.precipitation_sum;
+        labels = weather.daily.time.map(t => new Date(t).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric'}));
+    } catch (e) {
+        console.error("Forecast fetch failed", e);
+        labels = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+    }
+
+    // 2. Calculate Gap: Need - Rain
+    // Static baseline: Seedlings need ~3mm, Vegetative ~6mm, Flowering ~9mm
+    const selectedCardEl = document.querySelector('.crop-card.selected');
+    const plantedDateStr = selectedCardEl ? selectedCardEl.dataset.planted : null;
+    let age = 0;
+    if (plantedDateStr) {
+        age = Math.floor((Date.now() - new Date(plantedDateStr).getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    const dailyNeed = age < 20 ? 3 : (age < 60 ? 6 : 9);
+    const dataPoints = dailyRain.map(rain => Math.max(0, dailyNeed - rain).toFixed(1));
+
+    // 3. Render or Update Chart
+    if (window.irrigationChart) {
+        window.irrigationChart.destroy();
+    }
+
+    window.irrigationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Water Needed (mm)',
+                data: dataPoints,
+                backgroundColor: '#3583F1',
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#838383' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#838383' }
+                }
+            }
+        }
+    });
+
+    document.getElementById('water-chart-wrapper').hidden = false;
+}
+
 function computeReadinessMessage(selectedCrop, history = []) {
     const daysForCrop = {
         maize: 90,
@@ -551,7 +633,14 @@ function renderCrops(crops) {
             document.querySelectorAll('.crop-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             window.selectedCrop = crop.name;
-            if (window.latestWeatherData) updatePredictions(window.latestWeatherData);
+
+            if (window.latestWeatherData) {
+                updatePredictions(window.latestWeatherData);
+                updateWaterChart(window.selectedCrop);
+                // Reveal the insights and chart immediately on click
+                document.getElementById('prediction-insights').hidden = false;
+                document.getElementById('water-chart-wrapper').hidden = false;
+            }
         });
 
         addCard.before(card);
@@ -618,12 +707,15 @@ function initializeCropWidgets() {
         seePredictions.addEventListener('click', (e) => {
             e.preventDefault();
             const insightsPanel = document.getElementById('prediction-insights');
+            const chartPanel = document.getElementById('water-chart-wrapper');
             if (insightsPanel) {
                 insightsPanel.hidden = !insightsPanel.hidden;
+                if (chartPanel) chartPanel.hidden = insightsPanel.hidden;
             }
             // re-run insight logic with latest data
             if (window.latestWeatherData) {
                 updatePredictions(window.latestWeatherData);
+                updateWaterChart(window.selectedCrop);
             }
         });
     }

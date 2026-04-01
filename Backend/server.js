@@ -3,6 +3,11 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI("AIzaSyCGqJfeQHCaNhIwfysOjXar6VC4EewArA0");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const CROPS_FILE = path.join(__dirname, 'crops.json');
 const AUTH_FILE = path.join(__dirname, 'auth.json');
@@ -18,6 +23,53 @@ function writeKB(data) {
   try {
     fs.writeFileSync(KB_FILE, JSON.stringify(data, null, 2));
   } catch (e) { console.error("KB write error:", e); }
+}
+
+/**
+ * Uses AI to generate expert agricultural data for a specific crop.
+ */
+async function fetchCropDataFromAI(cropName) {
+  const prompt = `Act as an expert agronomist. Provide detailed agricultural growth data for the crop "${cropName}" in strict JSON format. 
+  The output must be ONLY the JSON object with no markdown formatting or backticks.
+  Format:
+  {
+    "totalDays": (integer, days to full maturity),
+    "idealTemp": [min_celsius, max_celsius],
+    "idealHum": [min_percent, max_percent],
+    "stages": [
+      {"d": day_number, "n": "stage_name", "msg": "advice for this stage"}
+    ]
+  }
+  Provide at least 4 growth stages.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Use regex to extract only the JSON object block, handling potential conversational text padding
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Response body does not contain a valid JSON structure");
+    
+    const data = JSON.parse(jsonMatch[0]);
+    
+    // Validate that the AI returned all essential keys needed by the frontend logic
+    const requiredFields = ['totalDays', 'idealTemp', 'idealHum', 'stages'];
+    const isInvalid = requiredFields.some(field => data[field] === undefined) || !Array.isArray(data.stages);
+    
+    if (isInvalid) throw new Error("AI returned data, but it is missing required agricultural fields or stages");
+
+    return data;
+  } catch (error) {
+    console.error(`AI Research Error for "${cropName}":`, error.message);
+    // Fallback template if AI fails
+    return {
+      totalDays: 90,
+      idealTemp: [20, 30],
+      idealHum: [50, 80],
+      stages: [{ d: 90, n: "Growth Phase", msg: "General care instructions. Monitor climate for stress." }]
+    };
+  }
 }
 
 // Initialize auth.json if it doesn't exist
@@ -145,7 +197,7 @@ app.get('/api/crops/:userId', (req, res) => {
 });
 
 // ADD a crop for a specific user
-app.post('/api/crops/:userId', (req, res) => {
+app.post('/api/crops/:userId', async (req, res) => {
   const allCrops = readCrops();
   const userId = req.params.userId;
   
@@ -157,13 +209,10 @@ app.post('/api/crops/:userId', (req, res) => {
   // Feature in knowledgebase: if it's a new crop name, add a default template
   const kb = readKB();
   const cropKey = newCrop.name.toLowerCase();
+  
   if (!kb[cropKey]) {
-    kb[cropKey] = {
-      totalDays: 90,
-      idealTemp: [20, 30],
-      idealHum: [50, 80],
-      stages: [{ d: 90, n: "Growth", msg: "Standard care instructions." }]
-    };
+    console.log(`Researching ${newCrop.name} using AI...`);
+    kb[cropKey] = await fetchCropDataFromAI(newCrop.name);
     writeKB(kb);
   }
   
